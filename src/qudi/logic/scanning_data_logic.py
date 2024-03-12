@@ -379,7 +379,7 @@ class ScanningDataLogic(LogicBase):
 
         # Scale axes and data
         scan_range_x = (scan_data.scan_range[0][1], scan_data.scan_range[0][0])
-        scan_range_y =  (scan_data.scan_range[1][1], scan_data.scan_range[1][0])
+        scan_range_y = (scan_data.scan_range[1][1], scan_data.scan_range[1][0])
         si_prefix_x = ScaledFloat(scan_range_x[1]-scan_range_x[0]).scale
         si_factor_x = ScaledFloat(scan_range_x[1]-scan_range_x[0]).scale_val
         si_prefix_y = ScaledFloat(scan_range_y[1]-scan_range_y[0]).scale
@@ -395,8 +395,8 @@ class ScanningDataLogic(LogicBase):
                             vmin=cbar_range[0]/si_factor_cb,
                             vmax=cbar_range[1]/si_factor_cb,
                             interpolation='none',
-                            extent=(*np.asarray(scan_data.scan_range[0])/si_factor_x,
-                                    *np.asarray(scan_data.scan_range[1])/si_factor_y))
+                            extent=(*np.asarray(scan_range_x)/si_factor_x,
+                                    *np.asarray(scan_range_y)/si_factor_y))
 
         ax.set_aspect(1)
         ax.set_xlabel(scan_axes[0] + f' position ({si_prefix_x}{scan_data.axes_units[scan_axes[0]]})')
