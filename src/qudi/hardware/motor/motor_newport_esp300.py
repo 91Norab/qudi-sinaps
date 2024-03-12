@@ -303,105 +303,66 @@ class ScannerNewportESP300(MotorInterface):
         return constraints
 
     def move_rel(self, param_dict):
-        """ Moves stage in given direction (relative movement)
-
+        """Moves stage in given direction (relative movement)
+    
         @param dict param_dict: dictionary, which passes all the relevant
                                 parameters, which should be changed. Usage:
                                  {'axis_label': <the-abs-pos-value>}.
                                  'axis_label' must correspond to a label given
                                  to one of the axis.
-
+    
         A smart idea would be to ask the position after the movement.
         """
         curr_pos_dict = self.get_pos()
         constraints = self.get_constraints()
-
-        if param_dict.get(self._x_axis.label) is not None:
-            move_x = param_dict[self._x_axis.label]
-            curr_pos_x = curr_pos_dict[self._x_axis.label]
-
-            if  (curr_pos_x + move_x > constraints[self._x_axis.label]['pos_max'] ) or\
-                (curr_pos_x + move_x < constraints[self._x_axis.label]['pos_min']):
-
-                self.log.warning('Cannot make further movement of the axis "{0}" with the step {1}, '
-                                 'since the border [{2},{3}] was reached! Ignore command!'
-                                 .format(self._x_axis.label, move_x, constraints[self._x_axis.label]['pos_min'],
-                                         constraints[self._x_axis.label]['pos_max']))
-            else:
-                self.esp.move_relative_position(move_x, self._x_axis.number)
-
-        if param_dict.get(self._y_axis.label) is not None:
-            move_y = param_dict[self._y_axis.label]
-            curr_pos_y = curr_pos_dict[self._y_axis.label]
-
-            if  (curr_pos_y + move_y > constraints[self._y_axis.label]['pos_max'] ) or\
-                (curr_pos_y + move_y < constraints[self._y_axis.label]['pos_min']):
-
-                self.log.warning('Cannot make further movement of the axis "{0}" with the step {1}, '
-                                 'since the border [{2},{3}] was reached! Ignore command!'
-                                 .format(self._y_axis.label, move_y, constraints[self._y_axis.label]['pos_min'],
-                                         constraints[self._y_axis.label]['pos_max']))
-            else:
-                self.esp.move_relative_position(move_y, self._y_axis.number)
-
-        if param_dict.get(self._z_axis.label) is not None:
-            move_z = param_dict[self._z_axis.label]
-            curr_pos_z = curr_pos_dict[self._z_axis.label]
-
-            if  (curr_pos_z + move_z > constraints[self._z_axis.label]['pos_max'] ) or\
-                (curr_pos_z + move_z < constraints[self._z_axis.label]['pos_min']):
-
-                self.log.warning('Cannot make further movement of the axis "{0}" with the step {1}, '
-                                 'since the border [{2},{3}] was reached! Ignore command!'
-                                 .format(self._z_axis.label, move_z, constraints[self._z_axis.label]['pos_min'],
-                                         constraints[self._z_axis.label]['pos_max']))
-            else:
-                self.esp.move_relative_position(move_z, self._z_axis.number)
-
+        movements = []
+    
+        for axis in [self._x_axis, self._y_axis, self._z_axis]:
+            if axis.label in param_dict:
+                move_value = param_dict[axis.label]
+                curr_pos = curr_pos_dict[axis.label]
+    
+                if (curr_pos + move_value > constraints[axis.label]['pos_max']) or \
+                   (curr_pos + move_value < constraints[axis.label]['pos_min']):
+                    self.log.warning('Cannot make further movement of the axis "{0}" with the step {1}, '
+                                     'since the border [{2},{3}] was reached! Ignore command!'
+                                     .format(axis.label, move_value, constraints[axis.label]['pos_min'],
+                                             constraints[axis.label]['pos_max']))
+                else:
+                    movements.append((move_value, axis.number))
+    
+        # Perform the move_relative_position for all valid movements
+        for move_value, axis_number in movements:
+            self.esp.move_relative_position(move_value, axis_number)
+    
     def move_abs(self, param_dict):
-        """ Moves stage to absolute position (absolute movement)
-
+        """Moves stage to absolute position (absolute movement)
+    
         @param dict param_dict: dictionary, which passes all the relevant
                                 parameters, which should be changed. Usage:
                                  {'axis_label': <the-abs-pos-value>}.
                                  'axis_label' must correspond to a label given
                                  to one of the axis.
         """
+        movements = []
         constraints = self.get_constraints()
-
-        if param_dict.get(self._x_axis.label) is not None:
-            desired_pos = param_dict[self._x_axis.label]
-            constr = constraints[self._x_axis.label]
-
-            if not(constr['pos_min'] <= desired_pos <= constr['pos_max']):
-                self.log.warning('Cannot make absolute movement of the axis "{0}" to position {1}, '
-                                 'since it exceeds the limits [{2},{3}] ! Command is ignored!'
-                                 .format(self._x_axis.label, desired_pos, constr['pos_min'], constr['pos_max']))
-            else:
-                self.esp.move_absolute_position(desired_pos, self._x_axis.number)
-
-        if param_dict.get(self._y_axis.label) is not None:
-            desired_pos = param_dict[self._y_axis.label]
-            constr = constraints[self._y_axis.label]
-
-            if not(constr['pos_min'] <= desired_pos <= constr['pos_max']):
-                self.log.warning('Cannot make absolute movement of the axis "{0}" to position {1}, '
-                                 'since it exceeds the limits [{2},{3}] ! Command is ignored!'
-                                 .format(self._y_axis.label, desired_pos, constr['pos_min'], constr['pos_max']))
-            else:
-                self.esp.move_absolute_position(desired_pos, self._y_axis.number)
-
-        if param_dict.get(self._z_axis.label) is not None:
-            desired_pos = param_dict[self._z_axis.label]
-            constr = constraints[self._z_axis.label]
-
-            if not(constr['pos_min'] <= desired_pos <= constr['pos_max']):
-                self.log.warning('Cannot make absolute movement of the axis "{0}" to position {1}, '
-                                 'since it exceeds the limits [{2},{3}] ! Command is ignored!'
-                                 .format(self._z_axis.label, desired_pos, constr['pos_min'], constr['pos_max']))
-            else:
-                self.esp.move_absolute_position(desired_pos, self._z_axis.number)
-
+    
+        for axis in [self._x_axis, self._y_axis, self._z_axis]:
+            if axis.label in param_dict:
+                desired_pos = param_dict[axis.label]
+                constr = constraints[axis.label]
+    
+                if not (constr['pos_min'] <= desired_pos <= constr['pos_max']):
+                    self.log.warning('Cannot make absolute movement of the axis "{0}" to position {1}, '
+                                     'since it exceeds the limits [{2},{3}]! Command is ignored!'
+                                     .format(axis.label, desired_pos, constr['pos_min'], constr['pos_max']))
+                else:
+                    movements.append((desired_pos, axis.number))
+    
+        # Perform the move_absolute_position for all valid movements
+        for pos, axis_number in movements:
+            self.esp.move_absolute_position(pos, axis_number)
+    
     def abort(self):
         """ Stops movement of the stage
 
@@ -450,7 +411,6 @@ class ScannerNewportESP300(MotorInterface):
         status = {}
         if param_list is not None:
             if self._x_axis.label in param_list:
-                pass
                 status[self._x_axis.label] = int(self.esp.get_axis_motion_status(self._x_axis.number))
 
             if self._y_axis.label in param_list:
@@ -511,25 +471,19 @@ class ScannerNewportESP300(MotorInterface):
         """
         vel = {}
         if param_list is not None:
-            if self._x_axis.label in param_list:
-                vel[self._x_axis.label] = float(self.esp.get_velocity(self._x_axis.number))
-
-            if self._y_axis.label in param_list:
-                vel[self._x_axis.label] = float(self.esp.get_velocity(self._y_axis.number))
-
-            if self._z_axis.label in param_list:
-                vel[self._x_axis.label] = float(self.esp.get_velocity(self._z_axis.number))
+            for axis in [self._x_axis, self._y_axis, self._z_axis]:
+                if axis.label in param_list:
+                    vel[axis.label] = float(self.esp.get_velocity(axis.number))
 
         else:
-            vel[self._x_axis.label] = float(self.esp.get_velocity(self._x_axis.number))
-            vel[self._y_axis.label] = float(self.esp.get_velocity(self._y_axis.number))
-            vel[self._z_axis.label] = float(self.esp.get_velocity(self._z_axis.number))
+            for axis in [self._x_axis, self._y_axis, self._z_axis]:
+                vel[axis.label] = float(self.esp.get_velocity(axis.number))
 
         return vel
 
     def set_velocity(self, param_dict):
-        """ Write new value for velocity.
-
+        """Write new value for velocity.
+    
         @param dict param_dict: dictionary, which passes all the relevant
                                 parameters, which should be changed. Usage:
                                  {'axis_label': <the-velocity-value>}.
@@ -537,39 +491,18 @@ class ScannerNewportESP300(MotorInterface):
                                  to one of the axis.
         """
         constraints = self.get_constraints()
-
-        if param_dict.get(self._x_axis.label) is not None:
-            desired_vel = param_dict[self._x_axis.label]
-            constr = constraints[self._x_axis.label]
-
-            if not(constr['vel_min'] <= desired_vel <= constr['vel_max']):
-                self.log.warning('Cannot set velocity of the axis "{0}" to position {1}, '
-                                 'since it exceeds the limits [{2},{3}] ! Command is ignored!'
-                                 .format(self._x_axis.label, desired_vel, constr['vel_min'], constr['vel_max']))
-            else:
-                self.esp.set_velocity_value(desired_vel, self._x_axis.number)
-
-        if param_dict.get(self._y_axis.label) is not None:
-            desired_vel = param_dict[self._y_axis.label]
-            constr = constraints[self._y_axis.label]
-
-            if not(constr['vel_min'] <= desired_vel <= constr['vel_max']):
-                self.log.warning('Cannot set velocity of the axis "{0}" to position {1}, '
-                                 'since it exceeds the limits [{2},{3}] ! Command is ignored!'
-                                 .format(self._y_axis.label, desired_vel, constr['vel_min'], constr['vel_max']))
-            else:
-                self.esp.set_velocity_value(desired_vel, self._y_axis.number)
-
-        if param_dict.get(self._z_axis.label) is not None:
-            desired_vel = param_dict[self._z_axis.label]
-            constr = constraints[self._z_axis.label]
-
-            if not(constr['vel_min'] <= desired_vel <= constr['vel_max']):
-                self.log.warning('Cannot set velocity of the axis "{0}" to possition {1}, '
-                                 'since it exceeds the limits [{2},{3}] ! Command is ignored!'
-                                 .format(self._z_axis.label, desired_vel, constr['pos_min'], constr['pos_max']))
-            else:
-                self.esp.set_velocity_value(desired_vel, self._z_axis.number)
+    
+        for axis in [self._x_axis, self._y_axis, self._z_axis]:
+            if axis.label in param_dict:
+                desired_vel = param_dict[axis.label]
+                constr = constraints[axis.label]
+    
+                if not (constr['vel_min'] <= desired_vel <= constr['vel_max']):
+                    self.log.warning('Cannot set velocity of the axis "{0}" to position {1}, '
+                                     'since it exceeds the limits [{2},{3}]! Command is ignored!'
+                                     .format(axis.label, desired_vel, constr['vel_min'], constr['vel_max']))
+                else:
+                    self.esp.set_velocity_value(desired_vel, axis.number)
 
 
     # =========================================================================
