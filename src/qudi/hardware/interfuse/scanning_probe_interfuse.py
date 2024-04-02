@@ -100,6 +100,12 @@ class ScanningProbeInterfuse(ScanningProbeInterface):
         self.last_scanned_line = []
         self.x_step = None
         self.y_step = None
+        self.x_values = None
+        self.y_values = None
+        self.x_start_pos = None
+        self.y_start_pos = None
+        self.x_end_pos = None
+        self.y_end_pos = None
         
         # New params for test.
         self._current_position_ranges = dict()
@@ -172,12 +178,12 @@ class ScanningProbeInterfuse(ScanningProbeInterface):
     def _convert_dict_mm_to_m(self, param_dict=None):
         """ Convert dict in mm to m, due to the ESP300 being by default in mm.
         """
-        return {key: round(value*1e-3, 6) for key, value in param_dict.items()}
+        return {key: round(value*1e-3, 9) for key, value in param_dict.items()}
 
     def _convert_dict_m_to_mm(self, param_dict=None):
         """ Convert dict in m to mm, due to the ESP300 being by default in mm.
         """
-        return {key: round(value*1e3, 6) for key, value in param_dict.items()}
+        return {key: round(value*1e3, 9) for key, value in param_dict.items()}
 
     def _set_up_hardware_for_scan(self):
         """ Setting up the counter and scanner hardware for scanning. """
@@ -367,10 +373,23 @@ class ScanningProbeInterfuse(ScanningProbeInterface):
             return -1
         self.module_state.lock()
     
-        # Save current position
+        # Save current position (marker position)
         self._x_pos_before_scan = self.get_position()['x']
         self._y_pos_before_scan = self.get_position()['y']
     
+        # Get the scan starting and ending positions
+        self.x_start_pos = round(self._x_pos_before_scan + self._current_scan_ranges[0][0], 9)
+        self.y_start_pos = round(self._y_pos_before_scan + self._current_scan_ranges[1][0], 9)
+        self.x_end_pos = round(self._x_pos_before_scan + self._current_scan_ranges[0][1], 9)
+        self.y_end_pos = round(self._y_pos_before_scan + self._current_scan_ranges[1][1], 9)
+        
+        # Generate the grid
+        self.x_values = np.linspace(self.x_start_pos, self.x_end_pos, self._current_scan_resolution[0])
+        if len(self._current_scan_axes) == 2:
+            self.y_values = np.linspace(self.y_start_pos, self.y_end_pos, self._current_scan_resolution[1])
+        else:
+            self.y_values = np.linspace(self._current_position['y'], self._current_position['y'], 1)
+        
         # Calculate step sizes
         x_full_range = self._current_scan_ranges[0][1] - self._current_scan_ranges[0][0]
         y_full_range = self._current_scan_ranges[1][1] - self._current_scan_ranges[1][0]
@@ -427,24 +446,20 @@ class ScanningProbeInterfuse(ScanningProbeInterface):
         """ Move to the starting position of the scan. """
         self.move_relative({'x': self._current_scan_ranges[0][0]})
         self.move_relative({'y': self._current_scan_ranges[1][0]})
-    
+                                    
     def _perform_scan(self):
         """ Perform the scan. """
         self._stop_requested = False
-        for line in range(self._current_scan_resolution[1]):
-            
-            self.log.warning(f'1. {self._stop_requested}')  # TODO for test to remove
+        for line, value_y in enumerate(self.y_values):
+            self.move_absolute({'y':value_y})
             if not self._stop_requested:
-                self.log.warning(f'2. {self._stop_requested}')  # TODO for test to remove
-            
-                for j in range(self._current_scan_resolution[0]):
+                for j, value_x in enumerate(self.x_values):
+                    self.move_absolute({'x':value_x})
                     self.last_scanned_line[j] = self._counter_hardware._get_counter_hist()
-                    self.move_relative({'x': self.x_step})
-                        
-            self.move_relative({'x': -(self._current_scan_resolution[0]*self.x_step)})
-            self._store_scan_data(line)
-            self.move_relative({'y': self.y_step})
-                                    
+
+                self._store_scan_data(line)
+                self.move_absolute({'x':self.x_start_pos})
+
     def _store_scan_data(self, line):
         """ Store scan data. 
         
@@ -574,3 +589,15 @@ class ScanningProbeInterfuse(ScanningProbeInterface):
 
         return self._scan_data
     '''
+    # def _perform_scan(self):
+    #     """ Perform the scan. """
+    #     self._stop_requested = False
+    #     for line in range(self._current_scan_resolution[1]):
+    #         if not self._stop_requested:
+    #             for j in range(self._current_scan_resolution[0]):
+    #                 self.last_scanned_line[j] = self._counter_hardware._get_counter_hist()
+    #                 self.move_relative({'x': self.x_step})
+                        
+    #         self.move_relative({'x': -(self._current_scan_resolution[0]*self.x_step)})
+    #         self._store_scan_data(line)
+    #         self.move_relative({'y': self.y_step})
