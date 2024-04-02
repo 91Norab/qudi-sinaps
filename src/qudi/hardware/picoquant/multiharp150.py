@@ -115,6 +115,7 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         self._set_histo_len(self._len_code)
         self._base_resolution_s = self._PS_TO_S * self._get_base_resolution()[0]
 
+        self._clock_frequency = 10
         self.exposure_time = 0.1
         self.set_up_counter()
         self.set_up_clock()
@@ -419,8 +420,8 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         self._clear_hist_memory()
         self.meas_run = True
 
-        exposure_time = 1 / self._clock_frequency
-        self._start(int(exposure_time * 1000))
+        self.exposure_time = 1 / self._clock_frequency
+        self._start(int(self.exposure_time * 1000))
 
         ctc_status = 0
         while ctc_status != 1:

@@ -21,6 +21,8 @@ import os
 import ctypes as ct
 from qudi.core.module import Base
 from qudi.core.configoption import ConfigOption
+from qudi.util.datastorage import TextDataStorage
+from qudi.util.paths import get_default_data_dir
 
 # FTDI and Communication errors
 error_codes = {
@@ -129,3 +131,12 @@ class KinesisMotor(Base):
         serial_number = self._serial_numbers[name]
         self._dll.CC_Home(serial_number)
 
+    def get_velocity(self, name):
+        """ Get the velocity in real work unit of the motor """
+        serial_number = self._serial_numbers[name]
+        acceleration = ct.c_int()
+        max_velocity = ct.c_int()
+        real_unit = ct.c_double()
+        self._dll.CC_GetVelParams(serial_number, ct.byref(acceleration), ct.byref(max_velocity)) 
+        self._dll.CC_GetRealValueFromDeviceUnit(serial_number, max_velocity, ct.byref(real_unit), 1)
+        return real_unit.value
