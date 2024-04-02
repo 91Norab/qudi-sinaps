@@ -857,7 +857,8 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         You need to use MH_GetAllHistograms in this case.
         """
         actual_length = self._set_histo_len(self._len_code)
-        ch_count = np.ones((actual_length,), dtype=np.uint32)
+        # ch_count = np.ones((actual_length,), dtype=np.uint32)
+        ch_count = np.empty(actual_length, dtype=np.uint32)
         channel = int(channel)
         channel_max = self._get_number_of_input_channels()
         if not (0 <= channel <= channel_max):
