@@ -64,11 +64,11 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
 
     sigStart = QtCore.Signal()
 
-    """
-    # ========================================
-    #              Basic functions
-    # ========================================
-    """
+
+    # =========================================================================
+    #                             Basic functions
+    # =========================================================================
+
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -127,11 +127,10 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         """ Deactivates and disconnects the device. """
         self._close_connection()
 
-    """
-    # ========================================
-    # Functions for the FastCounter Interface
-    # ========================================
-    """
+
+    # =========================================================================
+    #                      FastCounterInterface Commands
+    # =========================================================================
     # FIXME: The interface connection to the fast counter must be established!
 
     get_constraints = OverloadedAttribute()
@@ -272,11 +271,11 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         else:
             return
 
-    """
-    # ========================================
-    #    Functions for SlowCounterInterface
-    # ========================================
-    """
+
+    # =========================================================================
+    #                   SlowCounterInterface Commands
+    # =========================================================================
+
 
     @get_constraints.overload('SlowCounterInterface')
     def get_constraints(self):
@@ -389,11 +388,9 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         """
         return 0
 
-    """
-    # ========================================
+    # =========================================================================
     #    Helper functions for Counting
-    # ========================================
-    """
+    # =========================================================================
 
     def _get_count_rate_dll(self):
         """ Returns the current counts per second of the counter.
@@ -433,18 +430,15 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
         count_rate[0, 0] = sum(self._get_histogram(self._count_channel))/self.exposure_time
         return count_rate
 
-    """
-    ====================================================================================================================
-                                                            API
-    ====================================================================================================================
-    """
-
-
-    """
+    # =========================================================================
+    # =========================================================================
+    #                               HARDWARE WRAPPER
+    # =========================================================================
+    # =========================================================================
     # ========================================
     #        Hardware Helper functions
     # ========================================
-    """
+
 
     def _create_error_code(self):
         """ Create a dictionary with the error code for the device.
@@ -569,11 +563,9 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
                            '{1}'.format(func_val, self.error_code[func_val]))
         return func_val
 
-    """
     # ========================================
     #           Hardware functions
     # ========================================
-    """
     # These 2 next functions work independent of any device.
     # ------------------------------------------------------
 
@@ -895,9 +887,7 @@ class Multiharp150(FastCounterInterface, SlowCounterInterface):
             self._check(self._dll.MH_GetCountRate(self._deviceID, channel, ctypes.byref(count_rate)))
             return count_rate.value
 
-    """
-    NO USAGE
-    """
+
 
     def _get_hardware_info(self):
         """ Retrieve the device hardware information.

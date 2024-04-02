@@ -82,7 +82,11 @@ class KinesisMotor(Base):
     serial_numbers = ConfigOption('serial_numbers', missing='error')
     names = ConfigOption('names', missing='error')
     polling_rate_ms = ConfigOption('polling_rate_ms', default=200)
-
+    
+    # =========================================================================
+    #                            Basic functions
+    # =========================================================================
+    
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._dll = None
@@ -110,7 +114,11 @@ class KinesisMotor(Base):
             self._dll.CC_ClearMessageQueue(serial_number)
             self._dll.CC_StopPolling(serial_number)
             self._dll.CC_Close(serial_number)
-
+            
+    # =========================================================================
+    #                          Commands
+    # =========================================================================
+    
     def get_position(self, name):
         """ Get the position in real work unit of the motor """
         serial_number = self._serial_numbers[name]
