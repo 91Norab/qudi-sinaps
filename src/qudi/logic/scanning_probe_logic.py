@@ -52,7 +52,7 @@ class ScanningProbeLogic(LogicBase):
 
     # declare connectors
     _scanner = Connector(name='scanner', interface='ScanningProbeInterface')
-
+    
     # status vars
     _scan_ranges = StatusVar(name='scan_ranges', default=None)
     _scan_resolution = StatusVar(name='scan_resolution', default=None)
@@ -102,7 +102,7 @@ class ScanningProbeLogic(LogicBase):
         self.__scan_poll_timer.timeout.connect(self.__scan_poll_loop, QtCore.Qt.QueuedConnection)
         
         # Attempt to get scan_data from the hardware loop.
-        self._scanner().sigScanFinishLine.connect(self._update_scan_from_hardware())
+        self._scanner().sigScanFinishLine.connect(self._update_scan_from_hardware)
         return
 
     def on_deactivate(self):
@@ -341,6 +341,7 @@ class ScanningProbeLogic(LogicBase):
     # =========================================================================
     # Added to try to update image scan at the end of each line without using Timers
     def _update_scan_from_hardware(self):
+        # self.log.warning('Logic got data')
         self.sigScanStateChanged.emit(True, self.scan_data, self._curr_caller_id)
     # =========================================================================
 
