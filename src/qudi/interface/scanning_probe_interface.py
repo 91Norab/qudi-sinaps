@@ -303,7 +303,7 @@ class ScanData:
         else:
             self._position_data = None
         self._data = {
-            ch.name: np.full(self._scan_resolution, np.nan, dtype=ch.dtype) for ch in self._channels
+            ch.name: np.full(self._scan_resolution, 1, dtype=ch.dtype) for ch in self._channels
         }
         return
 
