@@ -8,19 +8,35 @@ from setuptools import setup, find_namespace_packages
 # ONLY LIST DEPENDENCIES THAT ARE DIRECTLY USED BY THIS PACKAGE (no inherited dependencies from
 # e.g. qudi-core)
 unix_dep = [
-    'wheel>=0.37.0',
     'qudi-core>=1.4.1',
-    'numpy>=1.21.3',
-    'pyqtgraph>=0.13.0',
-    'PySide2==5.15.2.1',
+    'entrypoints>=0.4',
+    'fysom>=2.1.6',
+    'lmfit>=1.0.3',
+    'lxml>=4.9.1',
+    'matplotlib>=3.6.0',
+    'nidaqmx>=0.5.7',
+    'numpy>=1.23.3',
+    'pyqtgraph>=0.13.1',
+    'PySide2>=5.15.2',
+    'PyVisa>=1.12.0',
+    'scipy>=1.9.1',
+    'zaber_motion>=2.14.6'
 ]
 
 windows_dep = [
-    'wheel>=0.37.0',
     'qudi-core>=1.4.1',
-    'numpy>=1.21.3',
-    'pyqtgraph>=0.13.0',
-    'PySide2==5.15.2.1',
+    'entrypoints>=0.4',
+    'fysom>=2.1.6',
+    'lmfit>=1.0.3',
+    'lxml>=4.9.1',
+    'matplotlib>=3.6.0',
+    'nidaqmx>=0.5.7',
+    'numpy>=1.23.3',
+    'pyqtgraph>=0.13.1',
+    'PySide2>=5.15.2',
+    'PyVisa>=1.12.0',
+    'scipy>=1.9.1',
+    'zaber_motion>=2.14.6'
 ]
 
 # The version number of this package is derived from the content of the "VERSION" file located in
@@ -47,11 +63,14 @@ with open('README.md', 'r') as file:
 # 6. Make sure your license tag matches the LICENSE (and maybe LICENSE.LESSER) file distributed
 #    with your package (default: GNU Lesser General Public License v3)
 setup(
-    name='qudi-addon-template',  # Choose a custom name
+    name='qudi-sinaps',  # Choose a custom name
     version=version,  # Automatically deduced from "VERSION" file (see above)
     packages=find_namespace_packages(where='src'),  # This should be enough for 95% of the use-cases
     package_dir={'': 'src'},  # same
-    package_data={'': []},  # include data files
+    package_data={'qudi'    : ['default.cfg'],
+                  'qudi.gui': ['*.ui', '*/*.ui'],
+                  'qudi.hardware': ['*.h', '*/*.h'],
+                  },  # include data files
     description='A template package for qudi addons.',  # Meaningful short(!) description
     long_description=long_description,  # Detailed description is taken from "README.md" file
     long_description_content_type='text/markdown',  # Content type of "README.md" file
@@ -66,6 +85,32 @@ setup(
               'instrument',
               'modular'
               ],
+    classifiers=['Development Status :: 4 - Beta',
+
+                 'Environment :: Win32 (MS Windows)',
+                 'Environment :: X11 Applications',
+                 'Environment :: MacOS X',
+
+                 'Intended Audience :: Science/Research',
+                 'Intended Audience :: End Users/Desktop',
+
+                 'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+
+                 'Natural Language :: English',
+
+                 'Operating System :: Microsoft :: Windows :: Windows 8',
+                 'Operating System :: Microsoft :: Windows :: Windows 8.1',
+                 'Operating System :: Microsoft :: Windows :: Windows 10',
+                 'Operating System :: MacOS :: MacOS X',
+                 'Operating System :: Unix',
+                 'Operating System :: POSIX :: Linux',
+
+                 'Programming Language :: Python :: 3.8',
+                 'Programming Language :: Python :: 3.9',
+                 'Programming Language :: Python :: 3.10',
+
+                 'Topic :: Scientific/Engineering',
+                 ],
     license='LGPLv3',  # License tag
     install_requires=windows_dep if sys.platform == 'win32' else unix_dep,  # package dependencies
     python_requires='>=3.8, <3.11',  # Specify compatible Python versions
